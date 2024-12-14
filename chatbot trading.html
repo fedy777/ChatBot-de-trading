@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot de Trading</title>
+    <style>
+        /* Styles globaux */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+        }
+        h1 {
+            font-size: 2em;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1em;
+            margin: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #chat-container {
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+            width: 600px; /* Agrandissement de la largeur */
+            height: 500px; /* Agrandissement de la hauteur */
+            background-color: #fff;
+            display: flex;
+            flex-direction: column;
+        }
+        #instruction {
+            color: #d9534f;
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+        #chat-messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            text-align: left;
+        }
+        #chat-messages p {
+            padding: 5px;
+            border-radius: 3px;
+            margin: 5px 0;
+        }
+        .user-message {
+            text-align: right;
+            background-color: #e0f7fa;
+            color: #00796b;
+        }
+        .bot-message {
+            text-align: left;
+            background-color: #f1f8e9;
+            color: #33691e;
+        }
+        #user-input {
+            width: 80%;
+            padding: 8px;
+        }
+        #questions-list {
+            margin-top: 20px;
+            text-align: left;
+            max-width: 600px;
+        }
+        #questions-list ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        #questions-list li {
+            margin: 5px 0;
+            cursor: pointer;
+            color: #00796b;
+        }
+        #questions-list li:hover {
+            text-decoration: underline;
+        }
+    </style>
+    <script>
+        const qaTrading = [
+        { keywords: ["day trading"], answer: "Le day trading implique de passer des trades et de les clôturer dans la même journée." },
+        { keywords: ["swing trading"], answer: "Le swing trading consiste à détenir des positions quelques jours à quelques semaines pour profiter des tendances." },
+        { keywords: ["trading"], answer: "Le trading consiste à acheter et vendre des actifs financiers pour réaliser un profit." },
+            { keywords: ["bourse"], answer: "La bourse permet aux investisseurs d'acheter et de vendre des actions d'entreprises cotées." },
+            { keywords: ["action"], answer: "Une action est une part de propriété dans une entreprise cotée en bourse." },
+            { keywords: ["obligation"], answer: "Une obligation est un prêt accordé à une entreprise ou un gouvernement, qui verse des intérêts aux investisseurs." },
+            { keywords: ["etf"], answer: "Un ETF est un fonds négocié en bourse qui regroupe un ensemble d'actifs et se négocie comme une action." },
+            { keywords: ["dividende"], answer: "Un dividende est une part des bénéfices distribuée aux actionnaires d'une entreprise." },
+            { keywords: ["forex"], answer: "Le Forex est le marché des changes où se négocient les devises étrangères." },
+            { keywords: ["broker"], answer: "Un broker est un intermédiaire qui exécute les ordres de trading des investisseurs." },
+            { keywords: ["CFD"], answer: "Un CFD est un contrat sur la différence permettant de spéculer sur la hausse ou la baisse des actifs." },
+            { keywords: ["levier"], answer: "L'effet de levier permet aux traders d'amplifier leurs positions avec un emprunt, augmentant les gains et les risques." },
+            { keywords: ["analyse technique"], answer: "L'analyse technique est une méthode qui utilise des graphiques et indicateurs pour prédire les mouvements de marché." },
+            { keywords: ["analyse fondamentale"], answer: "L'analyse fondamentale examine la valeur intrinsèque d'un actif en étudiant ses fondamentaux économiques." },
+            { keywords: ["stop loss"], answer: "Un stop loss est un ordre de vente automatique pour limiter les pertes si le marché tourne défavorablement." },
+            { keywords: ["take profit"], answer: "Le take profit est un ordre de vente automatique pour verrouiller les bénéfices lorsque le marché atteint un certain niveau." },
+            { keywords: ["cryptomonnaie"], answer: "Les cryptomonnaies sont des actifs numériques utilisant la cryptographie pour sécuriser les transactions." },
+            { keywords: ["bitcoin"], answer: "Le Bitcoin est la première cryptomonnaie, inventée en 2009, connue pour sa décentralisation." },
+            { keywords: ["ICO"], answer: "Une ICO est une offre initiale de jetons pour lever des fonds en cryptomonnaie pour un projet." },
+            { keywords: ["marché haussier"], answer: "Un marché haussier est une période où les prix des actifs augmentent de manière significative." },
+            { keywords: ["marché baissier"], answer: "Un marché baissier est une période où les prix des actifs chutent fortement." },
+            { keywords: ["short"], answer: "Le shorting est une technique de trading visant à profiter de la baisse d'un actif." },
+            { keywords: ["hedging"], answer: "Le hedging est une stratégie pour minimiser les risques d'un portefeuille en prenant des positions opposées." },
+            { keywords: ["risque"], answer: "Le risque en trading est la possibilité de subir une perte financière." },
+            { keywords: ["portefeuille"], answer: "Un portefeuille est un ensemble d'actifs financiers détenus par un investisseur." },
+            { keywords: ["liquidité"], answer: "La liquidité est la facilité avec laquelle un actif peut être acheté ou vendu sans affecter son prix." },
+            { keywords: ["PIP"], answer: "En Forex, un PIP est la plus petite unité de variation de prix d'une devise." },
+            { keywords: ["scalping"], answer: "Le scalping est une stratégie de trading visant de petits profits sur de courtes périodes." },
+            { keywords: ["IPO"], answer: "Une IPO est une offre publique initiale d'actions d'une entreprise qui souhaite entrer en bourse." },
+            { keywords: ["stabilité financière"], answer: "La stabilité financière est la capacité d'une entreprise ou d'un investisseur à supporter des périodes de marché défavorables." },
+            { keywords: ["options"], answer: "Les options sont des contrats qui donnent le droit d'acheter ou de vendre un actif à un prix donné dans le futur." }
+        ];
+
+        function afficherMessageBot(message) {
+            const chatContainer = document.getElementById("chat-messages");
+            chatContainer.innerHTML += "<p class='bot-message'><strong>Bot:</strong> " + message + "</p>";
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function envoyerMessage() {
+            let userMessage = document.getElementById("user-input").value.toLowerCase().trim();
+            let chatContainer = document.getElementById("chat-messages");
+
+           
+
+            chatContainer.innerHTML += "<p class='user-message'><strong>Vous:</strong> " + userMessage + "</p>";
+
+            let botMessage = "Je ne suis pas sûr de comprendre. Pouvez-vous reformuler ?";
+            
+            for (let qa of qaTrading) {
+                for (let keyword of qa.keywords) {
+                    if (userMessage.includes(keyword)) {
+                        botMessage = qa.answer;
+                        break;
+                    }
+                }
+                if (botMessage !== "Je ne suis pas sûr de comprendre. Pouvez-vous reformuler ?") {
+                    break;
+                }
+            }
+
+            afficherMessageBot(botMessage);
+            document.getElementById("user-input").value = "";
+        }
+
+        function selectQuestion(question) {
+            document.getElementById("user-input").value = question;
+        }
+
+        window.onload = function() {
+            afficherMessageBot("Bonjour ! Je suis votre assistant de trading. Comment puis-je vous aider aujourd'hui ?");
+        };
+
+        function afficherBienvenue() {
+            let prenom = prompt("Entrez votre prénom :");
+            if (prenom) {
+                let message = "Bienvenue " + prenom + " sur notre site!";
+                document.getElementById("bienvenue").innerText = message;
+            }
+        }
+
+        function quitterPage() {
+            let confirmation = confirm("Êtes-vous sûr de vouloir quitter la page ?");
+            if (confirmation) {
+                window.close();
+            }
+        }
+    </script>
+</head>
+<body>
+
+    <h1>Chatbot de Trading</h1>
+    <button onclick="afficherBienvenue()">Cliquez pour entrer votre prénom</button>
+    <p id="bienvenue"></p>
+
+    <div id="chat-container">
+        <h2>Chatbot</h2>
+        <div id="chat-messages"></div>
+        <input type="text" id="user-input" placeholder="Écrivez votre question ici..." onkeydown="if(event.key === 'Enter') envoyerMessage()" />
+        <button onclick="envoyerMessage()">Envoyer</button>
+    </div>
+
+    <div id="questions-list">
+        <h3>Questions suggérées :</h3>
+        <ul>
+            <li onclick="selectQuestion('Qu\'est-ce que le trading ?')">Qu'est-ce que le trading ?</li>
+            <li onclick="selectQuestion('Comment fonctionne la bourse ?')">Comment fonctionne la bourse ?</li>
+            <li onclick="selectQuestion('Qu\'est-ce qu\'une action ?')">Qu'est-ce qu'une action ?</li>
+            <li onclick="selectQuestion('Qu\'est-ce que le Forex ?')">Qu'est-ce que le Forex ?</li>
+            <li onclick="selectQuestion('Qu\'est-ce qu\'un ETF ?')">Qu'est-ce qu'un ETF ?</li>
+        </ul>
+    </div>
+    <button onclick="quitterPage()">Quitter la page</button>
+
+</body>
+</html>
+
